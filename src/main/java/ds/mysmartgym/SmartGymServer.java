@@ -6,6 +6,7 @@ import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.*;
 
 import ds.mysmartgym.MySmartGymGrpc.MySmartGymImplBase;
 
@@ -58,6 +59,12 @@ public class SmartGymServer {
       }
 
       static class MySmartGymImpl extends MySmartGymImplBase {
+        List<Float> weights = new ArrayList<Float>();
+
+        @Override
+        public void weightUpdate(Weight request, StreamObserver<Empty> responseObserver) {
+            weights.add(request.getWeight());
+        }
         
       }
       

@@ -12,6 +12,7 @@ service MySmartGym {
   rpc ConsumedFoodStreaming(stream ConsumedFoodRequest)
       returns (stream NutrientsReply) {}
   rpc HeartTracking(stream HeartBeat) returns (stream WorkoutIntensity) {}
+  rpc GetSavedWeights(Empty) returns (stream SavedWeight) {}
 }
 
 message Weight { float weight = 1; }
@@ -31,4 +32,40 @@ message WorkoutIntensity {
   int32 zone = 1;
   int32 hour = 2;
   int32 minutes = 3;
+}
+
+// Copied from
+// https://github.com/googleapis/googleapis/blob/882e6d69a30e4bde445dd33c710f1235b81270c7/google/type/datetime.proto#L52
+message DateTime {
+  // Optional. Year of date. Must be from 1 to 9999, or 0 if specifying a
+  // datetime without a year.
+  int32 year = 1;
+
+  // Required. Month of year. Must be from 1 to 12.
+  int32 month = 2;
+
+  // Required. Day of month. Must be from 1 to 31 and valid for the year and
+  // month.
+  int32 day = 3;
+
+  // Required. Hours of day in 24 hour format. Should be from 0 to 23. An API
+  // may choose to allow the value "24:00:00" for scenarios like business
+  // closing time.
+  int32 hours = 4;
+
+  // Required. Minutes of hour of day. Must be from 0 to 59.
+  int32 minutes = 5;
+
+  // Required. Seconds of minutes of the time. Must normally be from 0 to 59. An
+  // API may allow the value 60 if it allows leap-seconds.
+  int32 seconds = 6;
+
+  // Required. Fractions of seconds in nanoseconds. Must be from 0 to
+  // 999,999,999.
+  int32 nanos = 7;
+}
+
+message SavedWeight {
+  Weight weight = 1;
+  DateTime time = 2;
 }

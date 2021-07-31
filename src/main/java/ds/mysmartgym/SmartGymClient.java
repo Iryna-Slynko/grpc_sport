@@ -16,6 +16,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import ds.mysmartgym.*;
 
 public class SmartGymClient {
     private static final Logger logger = Logger.getLogger(SmartGymClient.class.getName());
@@ -29,8 +30,14 @@ public class SmartGymClient {
       blockingStub = MySmartGymGrpc.newBlockingStub(channel);
       asyncStub = MySmartGymGrpc.newStub(channel);
     }
-  
-  
+
+    public void addWeight(float weight) {
+      logger.info("*** Send weight: {0}", weight);
+
+      Weight request = Weight.newBuilder().setWeight(weight).build();
+      blockingStub.weightUpdate(request);
+    }
+
     /** Issues several different requests and then exits. */
     public static void main(String[] args) throws InterruptedException {
       String target = "localhost:50051";
@@ -46,7 +53,7 @@ public class SmartGymClient {
       ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
       try {
         SmartGymClient client = new SmartGymClient(channel);
-        
+        client.addWeight(58);
         
       } finally {
         channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);

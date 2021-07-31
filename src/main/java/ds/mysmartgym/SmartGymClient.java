@@ -32,7 +32,7 @@ public class SmartGymClient {
     }
 
     public void addWeight(float weight) {
-      logger.info("*** Send weight: {0}", weight);
+      logger.info(String.format("*** Send weight: {0}", weight));
 
       Weight request = Weight.newBuilder().setWeight(weight).build();
       blockingStub.weightUpdate(request);

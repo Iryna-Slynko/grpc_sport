@@ -4,8 +4,13 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
+import com.google.protobuf.Timestamp;
+import com.google.type.DateTime;
+
 import java.util.*;
 
 import ds.mysmartgym.MySmartGymGrpc.MySmartGymImplBase;
@@ -59,13 +64,19 @@ public class SmartGymServer {
       }
 
       static class MySmartGymImpl extends MySmartGymImplBase {
-        List<Float> weights = new ArrayList<Float>();
+        List<SavedWeight> savedWeights = new ArrayList<SavedWeight>();
 
         @Override
         public void weightUpdate(Weight request, StreamObserver<Empty> responseObserver) {
-            weights.add(request.getWeight());
+            SavedWeight savedWeight = SavedWeight.newBuilder().setWeight(request).setTime(currentTime()).build();
+            savedWeights.add(savedWeight);
         }
         
+      }
+
+      private static Timestamp currentTime() {
+        Instant time = Instant.now();
+        return Timestamp.newBuilder().setSeconds(time.getEpochSecond()).build();
       }
       
 }

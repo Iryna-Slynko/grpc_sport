@@ -2,6 +2,10 @@ package ds.mysmartgym;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.Message;
+import com.google.protobuf.Timestamp;
+import com.google.type.Date;
+import com.google.type.DateTime;
+
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -9,6 +13,8 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import java.io.IOException;
+import java.time.DateTimeException;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -32,10 +38,19 @@ public class SmartGymClient {
     }
 
     public void addWeight(float weight) {
-      logger.log(Level.INFO,"*** Send weight: {0}", weight);
+      info("*** Send weight: {0}", weight);
 
       Weight request = Weight.newBuilder().setWeight(weight).build();
       blockingStub.weightUpdate(request);
+    }
+
+    public void getWeights() {
+      Empty request = Empty.getDefaultInstance();
+      blockingStub.getSavedWeights(request).forEachRemaining(savedWeight -> {
+
+        info("Got {0} on {1}", savedWeight.getWeight(), fromCustomTime(savedWeight.getTime()));
+      });
+      
     }
 
     /** Issues several different requests and then exits. */
@@ -59,5 +74,12 @@ public class SmartGymClient {
         channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
       }
     }
+
+    private Instant fromCustomTime(Timestamp time) {
+      return Instant.ofEpochSecond(time.getSeconds());
+    }
  
+    private void info(String msg, Object... params) {
+      logger.log(Level.INFO, msg, params);
+    }
 }

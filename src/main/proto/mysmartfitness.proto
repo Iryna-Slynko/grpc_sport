@@ -1,0 +1,15 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+service MySmartFitness {
+  // Sends date, receives steam of activities and their duration on the given
+  // date
+
+  rpc ActivityTracking(google.protobuf.Timestamp) returns (stream Activity) {}
+}
+
+message Activity {
+  string activity = 1;
+  int32 steps = 2;
+  int32 duration = 3;
+}

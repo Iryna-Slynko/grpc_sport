@@ -1,27 +1,32 @@
 package ds.mysmartgym;
 
-import com.google.type.DateTime;
+import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import io.grpc.netty.shaded.io.netty.handler.codec.ReplayingDecoder;
 import java.io.IOException;
-import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-
 public class SmartGymServer {
   static final Logger logger = Logger.getLogger(SmartGymServer.class.getName());
-
   private Server server;
+  private int port;
+  private BindableService service;
+
+  public static SmartGymServer start(BindableService service, int port)
+      throws IOException {
+    SmartGymServer server = new SmartGymServer(service, port);
+    server.start();
+    return server;
+  }
+
+  private SmartGymServer(BindableService service, int port) {
+    this.service = service;
+    this.port = port;
+  }
 
   private void start() throws IOException {
-    /* The port on which the server should run */
-    int port = 50051;
-    server = ServerBuilder.forPort(port)
-                 .addService(new MySmartGymImpl())
-                 .build()
-                 .start();
+    server = ServerBuilder.forPort(port).addService(service).build().start();
     logger.info("Server started, listening on " + port);
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
@@ -50,15 +55,15 @@ public class SmartGymServer {
    * Await termination on the main thread since the grpc library uses daemon
    * threads.
    */
-  private void blockUntilShutdown() throws InterruptedException {
+  public void blockUntilShutdown() throws InterruptedException {
     if (server != null) {
       server.awaitTermination();
     }
   }
   public static void main(String[] args)
       throws IOException, InterruptedException {
-    final SmartGymServer server = new SmartGymServer();
-    server.start();
+    final SmartGymServer server =
+        SmartGymServer.start(new MySmartGymImpl(), 50051);
     server.blockUntilShutdown();
   }
 }

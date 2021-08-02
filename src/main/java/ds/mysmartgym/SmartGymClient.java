@@ -55,6 +55,51 @@ public class SmartGymClient {
     });
   }
 
+  public void checkFood() {
+    // asyncStub.heartTracking(responseObserver)
+  }
+
+  public void exercise() {
+    StreamObserver<WorkoutIntensity> responseObserver =
+        new StreamObserver<WorkoutIntensity>() {
+          int[] intensities = new int[5];
+
+          @Override
+          public void onNext(WorkoutIntensity value) {
+            System.out.println("receiving messages " + value);
+            intensities[value.getZone()]++;
+          }
+
+          @Override
+          public void onError(Throwable t) {
+            t.printStackTrace();
+          }
+
+          @Override
+          public void onCompleted() {
+            int max = 0;
+            int best = 0;
+            for (int i = 0; i < intensities.length; i++) {
+              if (intensities[i] >= max) {
+                max = intensities[i];
+                best = i;
+              }
+            }
+            System.out.println("stream is completed ... spent most of the time "
+                               + "doing exercises with " + best + " intensity");
+          }
+        };
+
+    StreamObserver<HeartBeat> beats = asyncStub.heartTracking(responseObserver);
+    Random r = new Random();
+    for (int i = 0; i < 20; i++) {
+
+      beats.onNext(
+          HeartBeat.newBuilder().setPulse(r.nextInt(100 + i) + 50).build());
+    }
+    beats.onCompleted();
+  }
+
   /** Issues several different requests and then exits. */
   public static void main(String[] args) throws InterruptedException {
     String target = "localhost:50051";
@@ -74,10 +119,11 @@ public class SmartGymClient {
       SmartGymClient client = new SmartGymClient(channel);
       client.addWeight(58);
       client.getWeights();
+      client.exercise();
     } catch (Exception exception) {
       System.err.println(exception.toString());
     } finally {
-      channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+      channel.shutdownNow().awaitTermination(600, TimeUnit.SECONDS);
     }
   }
 

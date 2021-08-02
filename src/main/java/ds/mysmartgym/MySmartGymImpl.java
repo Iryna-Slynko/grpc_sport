@@ -5,10 +5,10 @@ import ds.mysmartgym.WorkoutIntensity.Builder;
 import io.grpc.stub.StreamObserver;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
-
 
 class MySmartGymImpl extends MySmartGymImplBase {
   private final class HeartBeatToIntensityObserver
@@ -22,10 +22,11 @@ class MySmartGymImpl extends MySmartGymImplBase {
 
     @Override
     public void onNext(HeartBeat request) {
-      Date i = Date.from(Instant.now());
+      Calendar cal = Calendar.getInstance();
+      cal.setTime(Date.from(Instant.now()));
       Builder intensity = WorkoutIntensity.newBuilder()
-                              .setHour(i.getHours())
-                              .setMinutes(i.getMinutes());
+                              .setHour(cal.get(Calendar.HOUR))
+                              .setMinutes(cal.get(Calendar.MINUTE));
       int pulse = request.getPulse();
       SmartGymServer.logger.log(Level.INFO, "Pulse is {0}", pulse);
       if (pulse < 75) {

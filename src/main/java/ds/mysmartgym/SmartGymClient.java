@@ -2,7 +2,6 @@ package ds.mysmartgym;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.Message;
-import com.google.protobuf.Timestamp;
 import com.google.type.Date;
 import com.google.type.DateTime;
 import ds.mysmartgym.*;
@@ -14,7 +13,6 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 import java.time.DateTimeException;
-import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -51,7 +49,7 @@ public class SmartGymClient {
     info("*** Getting weights");
     blockingStub.getSavedWeights(request).forEachRemaining(savedWeight -> {
       info("Got {0} on {1}", savedWeight.getWeight(),
-           fromCustomTime(savedWeight.getTime()));
+           Helper.fromCustomTime(savedWeight.getTime()));
     });
   }
 
@@ -125,10 +123,6 @@ public class SmartGymClient {
     } finally {
       channel.shutdownNow().awaitTermination(600, TimeUnit.SECONDS);
     }
-  }
-
-  private Instant fromCustomTime(Timestamp time) {
-    return Instant.ofEpochSecond(time.getSeconds());
   }
 
   private void info(String msg, Object... params) {

@@ -54,13 +54,51 @@ public class SmartGymClient {
   }
 
   public void checkFood() {
-    // asyncStub.heartTracking(responseObserver)
+    StreamObserver<NutrientsReply> responseObserver =
+        new StreamObserver<NutrientsReply>() {
+          int count = 0;
+
+          @Override
+          public void onNext(NutrientsReply value) {
+            System.out.println(value.getMessage());
+            ;
+            count++;
+          }
+
+          @Override
+          public void onError(Throwable t) {
+            t.printStackTrace();
+          }
+
+          @Override
+          public void onCompleted() {
+            System.out.println("stream is completed ... got " + count +
+                               " messages");
+          }
+        };
+
+    StreamObserver<ConsumedFoodRequest> food =
+        asyncStub.consumedFoodStreaming(responseObserver);
+    Random r = new Random();
+    food.onNext(ConsumedFoodRequest.newBuilder()
+                    .setFood("Chicken")
+                    .setQuantity(r.nextInt(300) + 50)
+                    .build());
+    food.onNext(ConsumedFoodRequest.newBuilder()
+                    .setFood("Apple")
+                    .setQuantity(r.nextInt(100) + 50)
+                    .build());
+    food.onNext(ConsumedFoodRequest.newBuilder()
+                    .setFood("Yoghurt")
+                    .setQuantity(r.nextInt(400) + 100)
+                    .build());
+    food.onCompleted();
   }
 
   public void exercise() {
     StreamObserver<WorkoutIntensity> responseObserver =
         new StreamObserver<WorkoutIntensity>() {
-          int[] intensities = new int[5];
+          int[] intensities = new int[6];
 
           @Override
           public void onNext(WorkoutIntensity value) {
@@ -118,9 +156,11 @@ public class SmartGymClient {
       client.addWeight(58);
       client.getWeights();
       client.exercise();
+      client.checkFood();
     } catch (Exception exception) {
       System.err.println(exception.toString());
     } finally {
+      Thread.sleep(new Random().nextInt(1000) + 500);
       channel.shutdownNow().awaitTermination(600, TimeUnit.SECONDS);
     }
   }

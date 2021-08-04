@@ -5,6 +5,7 @@ import com.google.protobuf.Message;
 import com.google.type.Date;
 import com.google.type.DateTime;
 import ds.mysmartgym.*;
+import ds.shared.Helper;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;

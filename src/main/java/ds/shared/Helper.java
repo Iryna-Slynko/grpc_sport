@@ -1,4 +1,4 @@
-package ds.mysmartgym;
+package ds.shared;
 
 import com.google.protobuf.Timestamp;
 import java.time.Instant;

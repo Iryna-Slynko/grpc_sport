@@ -2,6 +2,8 @@ package ds.mysmartgym;
 
 import ds.mysmartgym.MySmartGymGrpc.MySmartGymImplBase;
 import ds.mysmartgym.WorkoutIntensity.Builder;
+import ds.shared.GrpcServer;
+import ds.shared.Helper;
 import io.grpc.stub.StreamObserver;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ class MySmartGymImpl extends MySmartGymImplBase {
                               .setHour(cal.get(Calendar.HOUR))
                               .setMinutes(cal.get(Calendar.MINUTE));
       int pulse = request.getPulse();
-      SmartGymServer.logger.log(Level.INFO, "Pulse is {0}", pulse);
+
       if (pulse < 75) {
         intensity.setZone(1);
       } else if (pulse < 100) {

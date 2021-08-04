@@ -1,4 +1,4 @@
-package ds.mysmartgym;
+package ds.mysmartfitness;
 
 import com.google.protobuf.Timestamp;
 import io.grpc.Channel;
@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 public class FitnessClient {
   private static final Logger logger =
-      Logger.getLogger(SmartGymClient.class.getName());
+      Logger.getLogger(FitnessClient.class.getName());
 
   private final MySmartFitnessGrpc.MySmartFitnessBlockingStub blockingStub;
   private final MySmartFitnessGrpc.MySmartFitnessStub asyncStub;

@@ -2,7 +2,7 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 
 option java_multiple_files = true;
-option java_package = "ds.mysmartgym";
+option java_package = "ds.mysmartfitness";
 option java_outer_classname = "SmartFitnessService";
 service MySmartFitness {
   // Sends date, receives steam of activities and their duration on the given

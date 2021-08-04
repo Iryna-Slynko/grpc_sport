@@ -1,11 +1,13 @@
-package ds.mysmartgym;
+package ds.mysmartfitness;
 
 import com.google.protobuf.Timestamp;
-import ds.mysmartgym.MySmartFitnessGrpc.MySmartFitnessImplBase;
+import ds.mysmartfitness.MySmartFitnessGrpc.MySmartFitnessImplBase;
+import ds.shared.Helper;
 import io.grpc.stub.StreamObserver;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
+
 
 class MySmartFitnessImpl extends MySmartFitnessImplBase {
   @Override

@@ -1,69 +1,12 @@
 package ds.mysmartgym;
 
-import io.grpc.BindableService;
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
+import ds.shared.GrpcServer;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 public class SmartGymServer {
-  static final Logger logger = Logger.getLogger(SmartGymServer.class.getName());
-  private Server server;
-  private int port;
-  private BindableService service;
-
-  public static SmartGymServer start(BindableService service, int port)
-      throws IOException {
-    SmartGymServer server = new SmartGymServer(service, port);
-    server.start();
-    return server;
-  }
-
-  private SmartGymServer(BindableService service, int port) {
-    this.service = service;
-    this.port = port;
-  }
-
-  private void start() throws IOException {
-    server = ServerBuilder.forPort(port).addService(service).build().start();
-    logger.info("Server started, listening on " + port);
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        // Use stderr here since the logger may have been reset by its JVM
-        // shutdown hook.
-        System.err.println(
-            "*** shutting down gRPC server since JVM is shutting down");
-        try {
-          SmartGymServer.this.stop();
-        } catch (InterruptedException e) {
-          e.printStackTrace(System.err);
-        }
-        System.err.println("*** server shut down");
-      }
-    });
-  }
-
-  private void stop() throws InterruptedException {
-    if (server != null) {
-      server.shutdown().awaitTermination(600, TimeUnit.SECONDS);
-    }
-  }
-
-  /**
-   * Await termination on the main thread since the grpc library uses daemon
-   * threads.
-   */
-  public void blockUntilShutdown() throws InterruptedException {
-    if (server != null) {
-      server.awaitTermination();
-    }
-  }
   public static void main(String[] args)
       throws IOException, InterruptedException {
-    final SmartGymServer server =
-        SmartGymServer.start(new MySmartGymImpl(), 50051);
+    final GrpcServer server = GrpcServer.start(new MySmartGymImpl(), 50051);
     server.blockUntilShutdown();
   }
 }

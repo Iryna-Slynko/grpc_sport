@@ -2,14 +2,14 @@ package ds.mysmartfitness;
 
 import com.google.protobuf.Timestamp;
 import ds.mysmartfitness.MySmartFitnessGrpc.MySmartFitnessImplBase;
+import ds.shared.GrpcService;
 import ds.shared.Helper;
 import io.grpc.stub.StreamObserver;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 
-
-class MySmartFitnessImpl extends MySmartFitnessImplBase {
+class MySmartFitnessImpl extends MySmartFitnessImplBase implements GrpcService {
   @Override
   public void activityTracking(Timestamp request,
                                StreamObserver<Activity> responseObserver) {
@@ -55,5 +55,16 @@ class MySmartFitnessImpl extends MySmartFitnessImplBase {
     }
 
     responseObserver.onCompleted();
+  }
+
+  @Override
+  public String getServiceName() {
+
+    return "fitness";
+  }
+
+  @Override
+  public String getDescription() {
+    return "provides information about the activities";
   }
 }

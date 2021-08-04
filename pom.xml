@@ -28,7 +28,11 @@
             <version>6.0.53</version>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.jmdns</groupId>
+            <artifactId>jmdns</artifactId>
+            <version>3.5.7</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -3,6 +3,7 @@ package ds.mysmartgym;
 import ds.mysmartgym.MySmartGymGrpc.MySmartGymImplBase;
 import ds.mysmartgym.WorkoutIntensity.Builder;
 import ds.shared.GrpcServer;
+import ds.shared.GrpcService;
 import ds.shared.Helper;
 import io.grpc.stub.StreamObserver;
 import java.time.Instant;
@@ -12,7 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 
-class MySmartGymImpl extends MySmartGymImplBase {
+class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
   private final class HeartBeatToIntensityObserver
       implements StreamObserver<HeartBeat> {
     private final StreamObserver<WorkoutIntensity> responseObserver;
@@ -138,5 +139,16 @@ class MySmartGymImpl extends MySmartGymImplBase {
   public StreamObserver<HeartBeat>
   heartTracking(StreamObserver<WorkoutIntensity> responseObserver) {
     return new HeartBeatToIntensityObserver(responseObserver);
+  }
+
+  @Override
+  public String getServiceName() {
+    return "smartgym";
+  }
+
+  @Override
+  public String getDescription() {
+
+    return "service to share the fitness information with trainer";
   }
 }

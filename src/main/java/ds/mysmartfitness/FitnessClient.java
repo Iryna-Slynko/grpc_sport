@@ -18,10 +18,19 @@ public class FitnessClient {
 
   private final MySmartFitnessGrpc.MySmartFitnessBlockingStub blockingStub;
   private final MySmartFitnessGrpc.MySmartFitnessStub asyncStub;
-  public FitnessClient(Channel channel) {
+
+  private ManagedChannel channel;
+
+  public ManagedChannel getChannel() { return channel; }
+
+  public FitnessClient() {
+    String target = DNSLookup.getEndpoint("fitness");
+
+    channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
     blockingStub = MySmartFitnessGrpc.newBlockingStub(channel);
     asyncStub = MySmartFitnessGrpc.newStub(channel);
   }
+
   private void getExercises() {
     Calendar c = Calendar.getInstance();
     Random r = new Random();
@@ -40,17 +49,17 @@ public class FitnessClient {
   }
 
   public static void main(String[] args) throws InterruptedException {
-    String target = DNSLookup.getEndpoint("fitness");
-
-    ManagedChannel channel =
-        ManagedChannelBuilder.forTarget(target).usePlaintext().build();
+    FitnessClient client = null;
     try {
-      FitnessClient client = new FitnessClient(channel);
+      client = new FitnessClient();
       client.getExercises();
     } catch (Exception exception) {
       System.err.println(exception.toString());
     } finally {
-      channel.shutdownNow().awaitTermination(600, TimeUnit.SECONDS);
+      if (client != null) {
+        client.getChannel().shutdownNow().awaitTermination(600,
+                                                           TimeUnit.SECONDS);
+      }
     }
   }
 }

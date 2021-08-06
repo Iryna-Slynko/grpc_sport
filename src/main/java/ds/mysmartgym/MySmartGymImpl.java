@@ -2,7 +2,6 @@ package ds.mysmartgym;
 
 import ds.mysmartgym.MySmartGymGrpc.MySmartGymImplBase;
 import ds.mysmartgym.WorkoutIntensity.Builder;
-import ds.shared.GrpcServer;
 import ds.shared.GrpcService;
 import ds.shared.Helper;
 import io.grpc.stub.StreamObserver;
@@ -11,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
+
 
 class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
   private final class HeartBeatToIntensityObserver
@@ -19,18 +18,18 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
     private final StreamObserver<WorkoutIntensity> responseObserver;
 
     private HeartBeatToIntensityObserver(
-        StreamObserver<WorkoutIntensity> responseObserver) {
+        final StreamObserver<WorkoutIntensity> responseObserver) {
       this.responseObserver = responseObserver;
     }
 
     @Override
-    public void onNext(HeartBeat request) {
-      Calendar cal = Calendar.getInstance();
+    public void onNext(final HeartBeat request) {
+      final Calendar cal = Calendar.getInstance();
       cal.setTime(Date.from(Instant.now()));
-      Builder intensity = WorkoutIntensity.newBuilder()
-                              .setHour(cal.get(Calendar.HOUR))
-                              .setMinutes(cal.get(Calendar.MINUTE));
-      int pulse = request.getPulse();
+      final Builder intensity = WorkoutIntensity.newBuilder()
+                                    .setHour(cal.get(Calendar.HOUR))
+                                    .setMinutes(cal.get(Calendar.MINUTE));
+      final int pulse = request.getPulse();
 
       if (pulse < 75) {
         intensity.setZone(1);
@@ -47,7 +46,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
     }
 
     @Override
-    public void onError(Throwable t) {
+    public void onError(final Throwable t) {
       responseObserver.onError(t);
     }
 
@@ -60,21 +59,22 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
   List<SavedWeight> savedWeights = new ArrayList<SavedWeight>();
 
   @Override
-  public void weightUpdate(Weight request,
-                           StreamObserver<Empty> responseObserver) {
-    SavedWeight savedWeight = SavedWeight.newBuilder()
-                                  .setWeight(request)
-                                  .setTime(Helper.currentTime())
-                                  .build();
+  public void weightUpdate(final Weight request,
+                           final StreamObserver<Empty> responseObserver) {
+    final SavedWeight savedWeight = SavedWeight.newBuilder()
+                                        .setWeight(request)
+                                        .setTime(Helper.currentTime())
+                                        .build();
     savedWeights.add(savedWeight);
-    Empty reply = Empty.newBuilder().build();
+    final Empty reply = Empty.newBuilder().build();
     responseObserver.onNext(reply);
     responseObserver.onCompleted();
   }
 
   @Override
-  public void getSavedWeights(Empty request,
-                              StreamObserver<SavedWeight> responseObserver) {
+  public void
+  getSavedWeights(final Empty request,
+                  final StreamObserver<SavedWeight> responseObserver) {
     System.err.println("Saved weights");
     savedWeights.forEach(responseObserver::onNext);
     responseObserver.onCompleted();
@@ -82,20 +82,22 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
 
   @Override
   public StreamObserver<ConsumedFoodRequest>
-  consumedFoodStreaming(StreamObserver<NutrientsReply> responseObserver) {
+  consumedFoodStreaming(final StreamObserver<NutrientsReply> responseObserver) {
     return new StreamObserver<ConsumedFoodRequest>() {
       @Override
-      public void onNext(ConsumedFoodRequest request) {
-        Integer proteins = getProtein(request.getFood(), request.getQuantity());
-        NutrientsReply proteinReply =
+      public void onNext(final ConsumedFoodRequest request) {
+        final Integer proteins =
+            getProtein(request.getFood(), request.getQuantity());
+        final NutrientsReply proteinReply =
             NutrientsReply.newBuilder()
                 .setMessage("Protein: " + proteins.toString() + "g")
                 .build();
 
         responseObserver.onNext(proteinReply);
 
-        Integer carbs = getCarbs(request.getFood(), request.getQuantity());
-        NutrientsReply carbsReply =
+        final Integer carbs =
+            getCarbs(request.getFood(), request.getQuantity());
+        final NutrientsReply carbsReply =
             NutrientsReply.newBuilder()
                 .setMessage("Carbohydrate: " + carbs.toString() + "g")
                 .build();
@@ -103,7 +105,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
         responseObserver.onNext(carbsReply);
       }
 
-      private Integer getCarbs(String food, int quantity) {
+      private Integer getCarbs(final String food, final int quantity) {
         if (food == "Sugar") {
           return quantity;
         } else if (food == "Chicken") {
@@ -113,7 +115,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
         }
       }
 
-      private Integer getProtein(String food, int quantity) {
+      private Integer getProtein(final String food, final int quantity) {
         if (food == "Sugar") {
           return 0;
         } else if (food == "Chicken") {
@@ -124,7 +126,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
       }
 
       @Override
-      public void onError(Throwable t) {
+      public void onError(final Throwable t) {
         responseObserver.onError(t);
       }
 
@@ -137,7 +139,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
 
   @Override
   public StreamObserver<HeartBeat>
-  heartTracking(StreamObserver<WorkoutIntensity> responseObserver) {
+  heartTracking(final StreamObserver<WorkoutIntensity> responseObserver) {
     return new HeartBeatToIntensityObserver(responseObserver);
   }
 

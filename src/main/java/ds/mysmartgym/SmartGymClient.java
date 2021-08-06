@@ -1,27 +1,16 @@
 package ds.mysmartgym;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.protobuf.Message;
-import com.google.type.Date;
-import com.google.type.DateTime;
-import ds.mysmartgym.*;
 import ds.shared.DNSLookup;
 import ds.shared.Helper;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import java.io.IOException;
-import java.time.DateTimeException;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 
 public class SmartGymClient {
   private static final Logger logger =
@@ -34,20 +23,20 @@ public class SmartGymClient {
    * Construct client for accessing RouteGuide server using the existing
    * channel.
    */
-  public SmartGymClient(Channel channel) {
+  public SmartGymClient(final Channel channel) {
     blockingStub = MySmartGymGrpc.newBlockingStub(channel);
     asyncStub = MySmartGymGrpc.newStub(channel);
   }
 
-  public void addWeight(float weight) {
+  public void addWeight(final float weight) {
     info("*** Send weight: {0}", weight);
 
-    Weight request = Weight.newBuilder().setWeight(weight).build();
+    final Weight request = Weight.newBuilder().setWeight(weight).build();
     blockingStub.weightUpdate(request);
   }
 
   public void getWeights() {
-    Empty request = Empty.getDefaultInstance();
+    final Empty request = Empty.getDefaultInstance();
     info("*** Getting weights");
     blockingStub.getSavedWeights(request).forEachRemaining(savedWeight -> {
       info("Got {0} on {1}", savedWeight.getWeight(),
@@ -56,19 +45,19 @@ public class SmartGymClient {
   }
 
   public void checkFood() {
-    StreamObserver<NutrientsReply> responseObserver =
+    final StreamObserver<NutrientsReply> responseObserver =
         new StreamObserver<NutrientsReply>() {
           int count = 0;
 
           @Override
-          public void onNext(NutrientsReply value) {
+          public void onNext(final NutrientsReply value) {
             System.out.println(value.getMessage());
             ;
             count++;
           }
 
           @Override
-          public void onError(Throwable t) {
+          public void onError(final Throwable t) {
             t.printStackTrace();
           }
 
@@ -79,9 +68,9 @@ public class SmartGymClient {
           }
         };
 
-    StreamObserver<ConsumedFoodRequest> food =
+    final StreamObserver<ConsumedFoodRequest> food =
         asyncStub.consumedFoodStreaming(responseObserver);
-    Random r = new Random();
+    final Random r = new Random();
     food.onNext(ConsumedFoodRequest.newBuilder()
                     .setFood("Chicken")
                     .setQuantity(r.nextInt(300) + 50)
@@ -98,18 +87,18 @@ public class SmartGymClient {
   }
 
   public void exercise() {
-    StreamObserver<WorkoutIntensity> responseObserver =
+    final StreamObserver<WorkoutIntensity> responseObserver =
         new StreamObserver<WorkoutIntensity>() {
           int[] intensities = new int[6];
 
           @Override
-          public void onNext(WorkoutIntensity value) {
+          public void onNext(final WorkoutIntensity value) {
             System.out.println("receiving messages " + value);
             intensities[value.getZone()]++;
           }
 
           @Override
-          public void onError(Throwable t) {
+          public void onError(final Throwable t) {
             t.printStackTrace();
           }
 
@@ -128,8 +117,9 @@ public class SmartGymClient {
           }
         };
 
-    StreamObserver<HeartBeat> beats = asyncStub.heartTracking(responseObserver);
-    Random r = new Random();
+    final StreamObserver<HeartBeat> beats =
+        asyncStub.heartTracking(responseObserver);
+    final Random r = new Random();
     for (int i = 0; i < 20; i++) {
 
       beats.onNext(
@@ -139,21 +129,21 @@ public class SmartGymClient {
   }
 
   /** Issues several different requests and then exits. */
-  public static void main(String[] args) throws InterruptedException {
-    String target = DNSLookup.getEndpoint("smartgym");
+  public static void main(final String[] args) throws InterruptedException {
+    final String target = DNSLookup.getEndpoint("smartgym");
     if (target == "") {
       System.err.println("Service not found");
       System.exit(1);
     }
-    ManagedChannel channel =
+    final ManagedChannel channel =
         ManagedChannelBuilder.forTarget(target).usePlaintext().build();
     try {
-      SmartGymClient client = new SmartGymClient(channel);
+      final SmartGymClient client = new SmartGymClient(channel);
       client.addWeight(58);
       client.getWeights();
       client.exercise();
       client.checkFood();
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println(exception.toString());
     } finally {
       Thread.sleep(new Random().nextInt(1000) + 500);
@@ -161,7 +151,7 @@ public class SmartGymClient {
     }
   }
 
-  private void info(String msg, Object... params) {
+  private void info(final String msg, final Object... params) {
     logger.log(Level.INFO, msg, params);
   }
 }

@@ -1,6 +1,7 @@
 package ds.mysmartfitness;
 
 import com.google.protobuf.Timestamp;
+import ds.shared.DNSLookup;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -39,17 +40,8 @@ public class FitnessClient {
   }
 
   public static void main(String[] args) throws InterruptedException {
-    String target = "localhost:50052";
-    if (args.length > 0) {
-      if ("--help".equals(args[0])) {
-        System.err.println("Usage: [target]");
-        System.err.println("");
-        System.err.println("  target  The server to connect to. Defaults to " +
-                           target);
-        System.exit(1);
-      }
-      target = args[0];
-    }
+    String target = DNSLookup.getEndpoint("fitness");
+
     ManagedChannel channel =
         ManagedChannelBuilder.forTarget(target).usePlaintext().build();
     try {

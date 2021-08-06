@@ -5,6 +5,7 @@ import com.google.protobuf.Message;
 import com.google.type.Date;
 import com.google.type.DateTime;
 import ds.mysmartgym.*;
+import ds.shared.DNSLookup;
 import ds.shared.Helper;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
@@ -139,16 +140,10 @@ public class SmartGymClient {
 
   /** Issues several different requests and then exits. */
   public static void main(String[] args) throws InterruptedException {
-    String target = "localhost:50051";
-    if (args.length > 0) {
-      if ("--help".equals(args[0])) {
-        System.err.println("Usage: [target]");
-        System.err.println("");
-        System.err.println("  target  The server to connect to. Defaults to " +
-                           target);
-        System.exit(1);
-      }
-      target = args[0];
+    String target = DNSLookup.getEndpoint("smartgym");
+    if (target == "") {
+      System.err.println("Service not found");
+      System.exit(1);
     }
     ManagedChannel channel =
         ManagedChannelBuilder.forTarget(target).usePlaintext().build();

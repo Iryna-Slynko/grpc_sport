@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 
-
 public class GrpcServer {
   static final Logger logger = Logger.getLogger(GrpcServer.class.getName());
   private Server server;

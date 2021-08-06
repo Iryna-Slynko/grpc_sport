@@ -11,7 +11,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-
 class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
   private final class HeartBeatToIntensityObserver
       implements StreamObserver<HeartBeat> {

@@ -60,11 +60,14 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
   @Override
   public void weightUpdate(final Weight request,
                            final StreamObserver<Empty> responseObserver) {
+    System.err.println("Saving weight");
+
     final SavedWeight savedWeight = SavedWeight.newBuilder()
                                         .setWeight(request)
                                         .setTime(Helper.currentTime())
                                         .build();
     savedWeights.add(savedWeight);
+
     final Empty reply = Empty.newBuilder().build();
     responseObserver.onNext(reply);
     responseObserver.onCompleted();
@@ -74,7 +77,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
   public void
   getSavedWeights(final Empty request,
                   final StreamObserver<SavedWeight> responseObserver) {
-    System.err.println("Saved weights");
+    System.err.println("Getting saved weights");
     savedWeights.forEach(responseObserver::onNext);
     responseObserver.onCompleted();
   }
@@ -82,6 +85,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
   @Override
   public StreamObserver<ConsumedFoodRequest>
   consumedFoodStreaming(final StreamObserver<NutrientsReply> responseObserver) {
+    System.err.println("Processing consumed food");
     return new StreamObserver<ConsumedFoodRequest>() {
       @Override
       public void onNext(final ConsumedFoodRequest request) {
@@ -139,6 +143,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
   @Override
   public StreamObserver<HeartBeat>
   heartTracking(final StreamObserver<WorkoutIntensity> responseObserver) {
+    System.err.println("Processing heartbeats");
     return new HeartBeatToIntensityObserver(responseObserver);
   }
 

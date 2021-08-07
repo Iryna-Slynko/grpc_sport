@@ -1,5 +1,6 @@
 package ds.mysmartgym;
 
+import com.google.protobuf.Empty;
 import ds.shared.DNSLookup;
 import ds.shared.Helper;
 import io.grpc.Channel;
@@ -10,6 +11,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 
 public class SmartGymClient {
   private static final Logger logger =

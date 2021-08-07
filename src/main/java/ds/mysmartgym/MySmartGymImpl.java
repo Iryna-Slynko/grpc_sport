@@ -1,5 +1,6 @@
 package ds.mysmartgym;
 
+import com.google.protobuf.Empty;
 import ds.mysmartgym.MySmartGymGrpc.MySmartGymImplBase;
 import ds.mysmartgym.WorkoutIntensity.Builder;
 import ds.shared.GrpcService;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
 
 class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
   private final class HeartBeatToIntensityObserver

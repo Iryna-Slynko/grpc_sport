@@ -1,5 +1,6 @@
 syntax = "proto3";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 option java_multiple_files = true;
 option java_package = "ds.mysmartgym";
@@ -9,16 +10,14 @@ package mysmartgym;
 
 service MySmartGym {
   // Sends weight
-  rpc WeightUpdate(Weight) returns (Empty) {}
+  rpc WeightUpdate(Weight) returns (google.protobuf.Empty) {}
   rpc ConsumedFoodStreaming(stream ConsumedFoodRequest)
       returns (stream NutrientsReply) {}
   rpc HeartTracking(stream HeartBeat) returns (stream WorkoutIntensity) {}
-  rpc GetSavedWeights(Empty) returns (stream SavedWeight) {}
+  rpc GetSavedWeights(google.protobuf.Empty) returns (stream SavedWeight) {}
 }
 
 message Weight { float weight = 1; }
-
-message Empty {}
 
 message ConsumedFoodRequest {
   string food = 1;

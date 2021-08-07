@@ -1,6 +1,15 @@
 package ds.fitclient;
 
+import com.google.protobuf.Empty;
 import ds.mysmartfitness.FitnessClient;
+import ds.mysmartgym.ConsumedFoodRequest;
+import ds.mysmartgym.MySmartGymGrpc;
+import ds.mysmartgym.NutrientsReply;
+import ds.mysmartgym.Weight;
+import ds.shared.DNSLookup;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -11,6 +20,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -18,10 +28,10 @@ import javax.swing.border.EmptyBorder;
 import org.jdatepicker.JDatePicker;
 
 public class Controller {
-  private JTextField entry1, reply1;
-  private JTextField entry2, reply2;
-  private JTextField entry3, reply3;
-  private JTextArea fitnessResponseText;
+  private JTextField weightText, weightReplyText;
+  private JTextArea foodText, foodReplyText;
+  private JTextField pulseTextField;
+  private JTextArea fitnessResponseText, pulseReplyText;
   private JDatePicker fitnessDatePicker;
   private SmartGymActionListener smartGymActionListener;
   private FitnessActionListener fitnessActionListener;
@@ -29,8 +39,99 @@ public class Controller {
 
   private class SmartGymActionListener implements ActionListener {
 
+    private ManagedChannel channel;
+    private MySmartGymGrpc.MySmartGymStub asyncStub;
+
+    public SmartGymActionListener() {
+      final String target = DNSLookup.getEndpoint("smartgym");
+      if (target.equals("")) {
+        JOptionPane.showMessageDialog(null,
+                                      "Can not connect to smartgym service");
+        return;
+      }
+      channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
+      asyncStub = MySmartGymGrpc.newStub(channel);
+    }
+
     @Override
-    public void actionPerformed(ActionEvent e) {}
+    public void actionPerformed(ActionEvent e) {
+
+      JButton button = (JButton)e.getSource();
+      switch (button.getName()) {
+      case "add_weight":
+        addWeight();
+        break;
+      case "send_food_info":
+        sendFoodInfo();
+        break;
+      case "send_heart_beat":
+        sendHeartBeat();
+        break;
+      }
+    }
+
+    private void sendFoodInfo() {
+      foodReplyText.setText("Processing");
+      final StreamObserver<NutrientsReply> responseObserver =
+          new StreamObserver<NutrientsReply>() {
+            StringBuffer sb = new StringBuffer();
+
+            @Override
+            public void onNext(final NutrientsReply value) {
+              sb.append(value.getMessage());
+              sb.append(System.getProperty("line.separator"));
+              foodReplyText.setText(sb.toString());
+            }
+
+            @Override
+            public void onError(final Throwable t) {
+              t.printStackTrace();
+            }
+
+            @Override
+            public void onCompleted() {}
+          };
+      final StreamObserver<ConsumedFoodRequest> food =
+          asyncStub.consumedFoodStreaming(responseObserver);
+      foodText.getText().lines().forEach(line -> {
+        String[] data = line.split(",");
+        if (data.length >= 2) {
+          try {
+            int value = Integer.parseInt(data[1].trim());
+            food.onNext(ConsumedFoodRequest.newBuilder()
+                            .setFood(data[0])
+                            .setQuantity(value)
+                            .build());
+          } catch (NumberFormatException exception) {
+            JOptionPane.showMessageDialog(null,
+                                          "Can not parse amount " + data[1]);
+          } catch (Exception exception) {
+            System.err.println(exception);
+          }
+        }
+      });
+    }
+
+    private void sendHeartBeat() {}
+
+    private void addWeight() {
+      final Float weight = Float.parseFloat(weightText.getText());
+      weightReplyText.setText("Processing");
+      final Weight request = Weight.newBuilder().setWeight(weight).build();
+      StreamObserver<Empty> noop = new StreamObserver<Empty>() {
+        @Override
+        public void onNext(Empty value) {}
+
+        @Override
+        public void onError(Throwable t) {}
+
+        @Override
+        public void onCompleted() {
+          weightReplyText.setText("Added weight " + weight.toString());
+        }
+      };
+      asyncStub.weightUpdate(request, noop);
+    }
   }
 
   private class FitnessActionListener implements ActionListener {
@@ -78,7 +179,7 @@ public class Controller {
     fitnessActionListener = new FitnessActionListener();
   }
 
-  private JPanel getService1JPanel() {
+  private JPanel createAddWeightPanel() {
 
     JPanel panel = new JPanel();
 
@@ -87,52 +188,54 @@ public class Controller {
     JLabel label = new JLabel("Enter value");
     panel.add(label);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
-    entry1 = new JTextField("", 10);
-    panel.add(entry1);
+    weightText = new JTextField("", 10);
+    panel.add(weightText);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
 
-    JButton button = new JButton("Invoke Service 1");
+    JButton button = new JButton("Add weight");
+    button.setName("add_weight");
     button.addActionListener(smartGymActionListener);
     panel.add(button);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
 
-    reply1 = new JTextField("", 10);
-    reply1.setEditable(false);
-    panel.add(reply1);
+    weightReplyText = new JTextField("", 10);
+    weightReplyText.setEditable(false);
+    panel.add(weightReplyText);
 
     panel.setLayout(boxlayout);
 
     return panel;
   }
 
-  private JPanel getService2JPanel() {
+  private JPanel createSendFoodTextPanel() {
 
     JPanel panel = new JPanel();
 
     BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.X_AXIS);
 
-    JLabel label = new JLabel("Enter value");
+    JLabel label = new JLabel("Enter comma separated values for food");
     panel.add(label);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
-    entry2 = new JTextField("", 10);
-    panel.add(entry2);
+    foodText = new JTextArea("Ham, 20", 2, 10);
+    panel.add(foodText);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
 
-    JButton button = new JButton("Invoke Service 2");
+    JButton button = new JButton("Send Food Information");
+    button.setName("send_food_info");
     button.addActionListener(smartGymActionListener);
     panel.add(button);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
 
-    reply2 = new JTextField("", 10);
-    reply2.setEditable(false);
-    panel.add(reply2);
+    foodReplyText = new JTextArea("", 2, 10);
+    foodReplyText.setEditable(false);
+    panel.add(foodReplyText);
 
     panel.setLayout(boxlayout);
 
     return panel;
   }
 
-  private JPanel getService3JPanel() {
+  private JPanel createSendHeartBeatPanel() {
 
     JPanel panel = new JPanel();
 
@@ -141,18 +244,19 @@ public class Controller {
     JLabel label = new JLabel("Enter value");
     panel.add(label);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
-    entry3 = new JTextField("", 10);
-    panel.add(entry3);
+    pulseTextField = new JTextField("", 10);
+    panel.add(pulseTextField);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
 
-    JButton button = new JButton("Invoke Service 3");
+    JButton button = new JButton("Send Heart Beat Info");
+    button.setName("send_heart_beat");
     button.addActionListener(smartGymActionListener);
     panel.add(button);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
 
-    reply3 = new JTextField("", 10);
-    reply3.setEditable(false);
-    panel.add(reply3);
+    pulseReplyText = new JTextArea("", 2, 10);
+    pulseReplyText.setEditable(false);
+    panel.add(pulseReplyText);
 
     panel.setLayout(boxlayout);
 
@@ -203,9 +307,9 @@ public class Controller {
     // Set border for the panel
     panel.setBorder(new EmptyBorder(new Insets(50, 100, 50, 100)));
 
-    panel.add(getService1JPanel());
-    panel.add(getService2JPanel());
-    panel.add(getService3JPanel());
+    panel.add(createAddWeightPanel());
+    panel.add(createSendFoodTextPanel());
+    panel.add(createSendHeartBeatPanel());
     panel.add(createFitnessJPanel());
 
     // Set size for the frame

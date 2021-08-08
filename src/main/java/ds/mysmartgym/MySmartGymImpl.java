@@ -16,11 +16,11 @@ import java.util.List;
  * MySmartGymImpl is the implementation of MySmartGym service
  */
 class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
-  private final class ConsumerFoodObserver
+  private final class ConsumedFoodObserver
       implements StreamObserver<ConsumedFoodRequest> {
     private final StreamObserver<NutrientsReply> responseObserver;
 
-    private ConsumerFoodObserver(
+    private ConsumedFoodObserver(
         StreamObserver<NutrientsReply> responseObserver) {
       this.responseObserver = responseObserver;
     }
@@ -46,7 +46,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
     }
 
     private Integer getCarbs(final String food, final int quantity) {
-      if (food == "Sugar") {
+      if (food == "Chocolate") {
         return quantity;
       } else if (food == "Chicken") {
         return quantity / 6;
@@ -56,7 +56,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
     }
 
     private Integer getProtein(final String food, final int quantity) {
-      if (food == "Sugar") {
+      if (food == "Chocolate") {
         return 0;
       } else if (food == "Chicken") {
         return quantity / 3;
@@ -152,7 +152,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
   public StreamObserver<ConsumedFoodRequest>
   consumedFoodStreaming(final StreamObserver<NutrientsReply> responseObserver) {
     System.err.println("Processing consumed food");
-    return new ConsumerFoodObserver(responseObserver);
+    return new ConsumedFoodObserver(responseObserver);
   }
 
   @Override

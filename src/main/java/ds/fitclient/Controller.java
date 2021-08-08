@@ -238,7 +238,7 @@ public class Controller {
 
     BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.LINE_AXIS);
 
-    JLabel label = new JLabel("Enter value");
+    JLabel label = new JLabel("Enter weight");
     panel.add(label);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
     weightText = new JTextField("", 10);
@@ -256,7 +256,7 @@ public class Controller {
     panel.add(weightReplyText);
 
     panel.setLayout(boxlayout);
-
+    panel.setBorder(new EmptyBorder(new Insets(5, 0, 5, 0)));
     return panel;
   }
 
@@ -284,7 +284,7 @@ public class Controller {
     panel.add(foodReplyText);
 
     panel.setLayout(boxlayout);
-
+    panel.setBorder(new EmptyBorder(new Insets(5, 0, 5, 0)));
     return panel;
   }
 
@@ -294,7 +294,7 @@ public class Controller {
 
     BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.LINE_AXIS);
 
-    JLabel label = new JLabel("Enter value");
+    JLabel label = new JLabel("Enter comma separated values for pulse");
     panel.add(label);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
     pulseTextField = new JTextField("", 10);
@@ -311,6 +311,7 @@ public class Controller {
     pulseReplyText.setEditable(false);
     panel.add(pulseReplyText);
 
+    panel.setBorder(new EmptyBorder(new Insets(5, 0, 5, 0)));
     panel.setLayout(boxlayout);
 
     return panel;
@@ -340,6 +341,7 @@ public class Controller {
     panel.add(fitnessResponseText);
 
     panel.setLayout(boxlayout);
+    panel.setBorder(new EmptyBorder(new Insets(5, 0, 5, 0)));
 
     return panel;
   }

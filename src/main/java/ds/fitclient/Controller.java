@@ -348,7 +348,7 @@ public class Controller {
 
   private void build() {
 
-    JFrame frame = new JFrame("Smart Fitness");
+    JFrame frame = new JFrame("Smart Fitness Tracking");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     // Set the panel to add buttons

@@ -3,9 +3,11 @@ package ds.fitclient;
 import com.google.protobuf.Empty;
 import ds.mysmartfitness.FitnessClient;
 import ds.mysmartgym.ConsumedFoodRequest;
+import ds.mysmartgym.HeartBeat;
 import ds.mysmartgym.MySmartGymGrpc;
 import ds.mysmartgym.NutrientsReply;
 import ds.mysmartgym.Weight;
+import ds.mysmartgym.WorkoutIntensity;
 import ds.shared.DNSLookup;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -30,8 +32,8 @@ import org.jdatepicker.JDatePicker;
 public class Controller {
   private JTextField weightText, weightReplyText;
   private JTextArea foodText, foodReplyText;
-  private JTextField pulseTextField;
-  private JTextArea fitnessResponseText, pulseReplyText;
+  private JTextField pulseTextField, pulseReplyText;
+  private JTextArea fitnessResponseText;
   private JDatePicker fitnessDatePicker;
   private SmartGymActionListener smartGymActionListener;
   private FitnessActionListener fitnessActionListener;
@@ -110,9 +112,56 @@ public class Controller {
           }
         }
       });
+      food.onCompleted();
     }
 
-    private void sendHeartBeat() {}
+    private void sendHeartBeat() {
+      final StreamObserver<WorkoutIntensity> responseObserver =
+          new StreamObserver<WorkoutIntensity>() {
+            int[] intensities = new int[6];
+
+            @Override
+            public void onNext(final WorkoutIntensity value) {
+              intensities[value.getZone()]++;
+            }
+
+            @Override
+            public void onError(final Throwable t) {
+              t.printStackTrace();
+            }
+
+            @Override
+            public void onCompleted() {
+              int max = 0;
+              int best = 0;
+              for (int i = 1; i < intensities.length; i++) {
+                if (intensities[i] >= max) {
+                  max = intensities[i];
+                  best = i;
+                }
+              }
+              pulseReplyText.setText("spent most of the time "
+                                     + "doing exercises with " + best +
+                                     " intensity");
+            }
+          };
+      final StreamObserver<HeartBeat> beats =
+          asyncStub.heartTracking(responseObserver);
+      String[] heartBeats = pulseTextField.getText().split(",");
+      for (int i = 0; i < heartBeats.length; i++) {
+        try {
+          beats.onNext(HeartBeat.newBuilder()
+                           .setPulse(Integer.parseInt(heartBeats[i]))
+                           .build());
+        } catch (NumberFormatException exception) {
+          JOptionPane.showMessageDialog(null,
+                                        "Can not parse pulse " + heartBeats[i]);
+        } catch (Exception exception) {
+          System.err.println(exception);
+        }
+      }
+      beats.onCompleted();
+    }
 
     private void addWeight() {
       final Float weight = Float.parseFloat(weightText.getText());
@@ -183,7 +232,7 @@ public class Controller {
 
     JPanel panel = new JPanel();
 
-    BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.X_AXIS);
+    BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.LINE_AXIS);
 
     JLabel label = new JLabel("Enter value");
     panel.add(label);
@@ -211,7 +260,7 @@ public class Controller {
 
     JPanel panel = new JPanel();
 
-    BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.X_AXIS);
+    BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.LINE_AXIS);
 
     JLabel label = new JLabel("Enter comma separated values for food");
     panel.add(label);
@@ -239,7 +288,7 @@ public class Controller {
 
     JPanel panel = new JPanel();
 
-    BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.X_AXIS);
+    BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.LINE_AXIS);
 
     JLabel label = new JLabel("Enter value");
     panel.add(label);
@@ -254,7 +303,7 @@ public class Controller {
     panel.add(button);
     panel.add(Box.createRigidArea(new Dimension(10, 0)));
 
-    pulseReplyText = new JTextArea("", 2, 10);
+    pulseReplyText = new JTextField("", 20);
     pulseReplyText.setEditable(false);
     panel.add(pulseReplyText);
 
@@ -267,7 +316,7 @@ public class Controller {
 
     JPanel panel = new JPanel();
 
-    BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.X_AXIS);
+    BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.LINE_AXIS);
 
     label = new JLabel("Choose a date");
     panel.add(label);
@@ -299,13 +348,13 @@ public class Controller {
     // Set the panel to add buttons
     JPanel panel = new JPanel();
 
-    // Set the BoxLayout to be X_AXIS: from left to right
-    BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
+    // Set the BoxLayout to be LINE_AXIS: from left to right
+    BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.PAGE_AXIS);
 
     panel.setLayout(boxlayout);
 
     // Set border for the panel
-    panel.setBorder(new EmptyBorder(new Insets(50, 100, 50, 100)));
+    panel.setBorder(new EmptyBorder(new Insets(20, 30, 20, 30)));
 
     panel.add(createAddWeightPanel());
     panel.add(createSendFoodTextPanel());

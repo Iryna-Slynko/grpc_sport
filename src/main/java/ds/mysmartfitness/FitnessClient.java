@@ -12,6 +12,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Client for MyFitness service
+ */
 public class FitnessClient {
   private static final Logger logger =
       Logger.getLogger(FitnessClient.class.getName());
@@ -23,6 +26,10 @@ public class FitnessClient {
 
   public ManagedChannel getChannel() { return channel; }
 
+  /**
+   * FitnessClient looks up for fitness service using jmdns and then connects to
+   * it
+   */
   public FitnessClient() {
     String target = DNSLookup.getEndpoint("fitness");
 
@@ -41,6 +48,11 @@ public class FitnessClient {
     });
   }
 
+  /**
+   * getExercises requests exercises from MyFitness Service for a given date
+   * @param c date in Java format
+   * @return list of activities
+   */
   public Iterator<Activity> getExercises(Calendar c) {
     Timestamp request = Timestamp.newBuilder()
                             .setSeconds(c.toInstant().getEpochSecond())

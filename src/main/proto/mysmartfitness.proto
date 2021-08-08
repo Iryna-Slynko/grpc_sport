@@ -5,9 +5,9 @@ option java_multiple_files = true;
 option java_package = "ds.mysmartfitness";
 option java_outer_classname = "SmartFitnessService";
 service MySmartFitness {
-  // Sends date, receives steam of activities and their duration on the given
+  // Receives date, sends steam of activities and their duration on the given
   // date
-
+  // Server streaming RPC
   rpc ActivityTracking(google.protobuf.Timestamp) returns (stream Activity) {}
 }
 

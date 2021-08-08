@@ -10,6 +10,10 @@ import java.util.logging.Logger;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 
+/**
+ * GrpcServer is a helper class that starts grpc server
+ * and registers it using jmDNS
+ */
 public class GrpcServer {
   static final Logger logger = Logger.getLogger(GrpcServer.class.getName());
   private Server server;
@@ -17,6 +21,14 @@ public class GrpcServer {
   private final GrpcService service;
   private ServiceInfo serviceInfo;
 
+  /**
+   * start creates a new server and starts it.
+   * @param service GrpcService
+   * @param port port to serve the service
+   * @return running server
+   * @throws UnknownHostException
+   * @throws IOException
+   */
   public static GrpcServer start(final GrpcService service, final int port)
       throws UnknownHostException, IOException {
     final GrpcServer server = new GrpcServer(service, port);
@@ -42,6 +54,8 @@ public class GrpcServer {
 
   private void unregisterService() throws UnknownHostException, IOException {
     final JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+    // Use stderr here since the logger may have been reset by its JVM
+    // shutdown hook.
     System.err.println("*** removing service registration");
     jmdns.unregisterService(serviceInfo);
   }

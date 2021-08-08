@@ -2,7 +2,7 @@ package ds.mysmartgym;
 
 import com.google.protobuf.Empty;
 import ds.shared.DNSLookup;
-import ds.shared.Helper;
+import ds.shared.TimestampHelper;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -12,7 +12,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
+/**
+ * SmartGymClient is a test client to test SmartGym service
+ */
 public class SmartGymClient {
   private static final Logger logger =
       Logger.getLogger(SmartGymClient.class.getName());
@@ -41,7 +43,7 @@ public class SmartGymClient {
     info("*** Getting weights");
     blockingStub.getSavedWeights(request).forEachRemaining(savedWeight -> {
       info("Got {0} on {1}", savedWeight.getWeight(),
-           Helper.fromCustomTime(savedWeight.getTime()));
+           TimestampHelper.fromTimestamp(savedWeight.getTime()));
     });
   }
 
@@ -69,6 +71,7 @@ public class SmartGymClient {
           }
         };
 
+    // send several randomly generated items
     final StreamObserver<ConsumedFoodRequest> food =
         asyncStub.consumedFoodStreaming(responseObserver);
     final Random r = new Random();
@@ -88,6 +91,10 @@ public class SmartGymClient {
   }
 
   public void exercise() {
+    // this observer calculate each time observer reports the new intensity and
+    // then picks up the intensity that was received the most. if several
+    // intensities were reported the same number of times, it chooses the
+    // highest one
     final StreamObserver<WorkoutIntensity> responseObserver =
         new StreamObserver<WorkoutIntensity>() {
           int[] intensities = new int[6];
@@ -120,6 +127,8 @@ public class SmartGymClient {
 
     final StreamObserver<HeartBeat> beats =
         asyncStub.heartTracking(responseObserver);
+    // send random data 20 times. Increase the maximum possible intensity with
+    // each request
     final Random r = new Random();
     for (int i = 0; i < 20; i++) {
 

@@ -3,12 +3,15 @@ package ds.mysmartfitness;
 import com.google.protobuf.Timestamp;
 import ds.mysmartfitness.MySmartFitnessGrpc.MySmartFitnessImplBase;
 import ds.shared.GrpcService;
-import ds.shared.Helper;
+import ds.shared.TimestampHelper;
 import io.grpc.stub.StreamObserver;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 
+/**
+ * MySmartFitnessImpl is the implementation of MySmartFitness service
+ */
 class MySmartFitnessImpl extends MySmartFitnessImplBase implements GrpcService {
   @Override
   public void
@@ -16,7 +19,7 @@ class MySmartFitnessImpl extends MySmartFitnessImplBase implements GrpcService {
                    final StreamObserver<Activity> responseObserver) {
     System.err.println("Getting tracking activities");
     final Calendar cal = Calendar.getInstance();
-    cal.setTime(Date.from(Helper.fromCustomTime(request)));
+    cal.setTime(Date.from(TimestampHelper.fromTimestamp(request)));
     final int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
     final Random r = new Random();
     switch (dayOfWeek) {

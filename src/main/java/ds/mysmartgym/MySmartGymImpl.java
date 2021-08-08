@@ -4,7 +4,7 @@ import com.google.protobuf.Empty;
 import ds.mysmartgym.MySmartGymGrpc.MySmartGymImplBase;
 import ds.mysmartgym.WorkoutIntensity.Builder;
 import ds.shared.GrpcService;
-import ds.shared.Helper;
+import ds.shared.TimestampHelper;
 import io.grpc.stub.StreamObserver;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -12,8 +12,70 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-
+/**
+ * MySmartGymImpl is the implementation of MySmartGym service
+ */
 class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
+  private final class ConsumerFoodObserver
+      implements StreamObserver<ConsumedFoodRequest> {
+    private final StreamObserver<NutrientsReply> responseObserver;
+
+    private ConsumerFoodObserver(
+        StreamObserver<NutrientsReply> responseObserver) {
+      this.responseObserver = responseObserver;
+    }
+
+    @Override
+    public void onNext(final ConsumedFoodRequest request) {
+      final Integer proteins =
+          getProtein(request.getFood(), request.getQuantity());
+      final NutrientsReply proteinReply =
+          NutrientsReply.newBuilder()
+              .setMessage("Protein: " + proteins.toString() + "g")
+              .build();
+
+      responseObserver.onNext(proteinReply);
+
+      final Integer carbs = getCarbs(request.getFood(), request.getQuantity());
+      final NutrientsReply carbsReply =
+          NutrientsReply.newBuilder()
+              .setMessage("Carbohydrate: " + carbs.toString() + "g")
+              .build();
+
+      responseObserver.onNext(carbsReply);
+    }
+
+    private Integer getCarbs(final String food, final int quantity) {
+      if (food == "Sugar") {
+        return quantity;
+      } else if (food == "Chicken") {
+        return quantity / 6;
+      } else {
+        return quantity / 4;
+      }
+    }
+
+    private Integer getProtein(final String food, final int quantity) {
+      if (food == "Sugar") {
+        return 0;
+      } else if (food == "Chicken") {
+        return quantity / 3;
+      } else {
+        return quantity / 7;
+      }
+    }
+
+    @Override
+    public void onError(final Throwable t) {
+      responseObserver.onError(t);
+    }
+
+    @Override
+    public void onCompleted() {
+      responseObserver.onCompleted();
+    }
+  }
+
   private final class HeartBeatToIntensityObserver
       implements StreamObserver<HeartBeat> {
     private final StreamObserver<WorkoutIntensity> responseObserver;
@@ -32,6 +94,8 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
                                     .setMinutes(cal.get(Calendar.MINUTE));
       final int pulse = request.getPulse();
 
+      // Assuming the 100% intensity pulse is 150. use formula to calculate
+      // zones: 1 - up to 50% 2 - 50-65% 3 - 65-75% 4 - 75-85% 5 - 85 and higher
       if (pulse < 75) {
         intensity.setZone(1);
       } else if (pulse < 100) {
@@ -57,7 +121,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
     }
   }
 
-  List<SavedWeight> savedWeights = new ArrayList<SavedWeight>();
+  private final List<SavedWeight> savedWeights = new ArrayList<SavedWeight>();
 
   @Override
   public void weightUpdate(final Weight request,
@@ -66,7 +130,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
 
     final SavedWeight savedWeight = SavedWeight.newBuilder()
                                         .setWeight(request)
-                                        .setTime(Helper.currentTime())
+                                        .setTime(TimestampHelper.currentTime())
                                         .build();
     savedWeights.add(savedWeight);
 
@@ -88,58 +152,7 @@ class MySmartGymImpl extends MySmartGymImplBase implements GrpcService {
   public StreamObserver<ConsumedFoodRequest>
   consumedFoodStreaming(final StreamObserver<NutrientsReply> responseObserver) {
     System.err.println("Processing consumed food");
-    return new StreamObserver<ConsumedFoodRequest>() {
-      @Override
-      public void onNext(final ConsumedFoodRequest request) {
-        final Integer proteins =
-            getProtein(request.getFood(), request.getQuantity());
-        final NutrientsReply proteinReply =
-            NutrientsReply.newBuilder()
-                .setMessage("Protein: " + proteins.toString() + "g")
-                .build();
-
-        responseObserver.onNext(proteinReply);
-
-        final Integer carbs =
-            getCarbs(request.getFood(), request.getQuantity());
-        final NutrientsReply carbsReply =
-            NutrientsReply.newBuilder()
-                .setMessage("Carbohydrate: " + carbs.toString() + "g")
-                .build();
-
-        responseObserver.onNext(carbsReply);
-      }
-
-      private Integer getCarbs(final String food, final int quantity) {
-        if (food == "Sugar") {
-          return quantity;
-        } else if (food == "Chicken") {
-          return quantity / 6;
-        } else {
-          return quantity / 4;
-        }
-      }
-
-      private Integer getProtein(final String food, final int quantity) {
-        if (food == "Sugar") {
-          return 0;
-        } else if (food == "Chicken") {
-          return quantity / 3;
-        } else {
-          return quantity / 7;
-        }
-      }
-
-      @Override
-      public void onError(final Throwable t) {
-        responseObserver.onError(t);
-      }
-
-      @Override
-      public void onCompleted() {
-        responseObserver.onCompleted();
-      }
-    };
+    return new ConsumerFoodObserver(responseObserver);
   }
 
   @Override

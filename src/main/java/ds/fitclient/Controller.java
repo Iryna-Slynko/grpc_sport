@@ -29,6 +29,7 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import org.jdatepicker.JDatePicker;
 
+// GUI for communicating with MySmartGym and MySmartFitness service
 public class Controller {
   private JTextField weightText, weightReplyText;
   private JTextArea foodText, foodReplyText;
@@ -39,6 +40,8 @@ public class Controller {
   private FitnessActionListener fitnessActionListener;
   private JLabel label;
 
+  // SmartGymActionListener processes clicks on buttons that interact with
+  // MySmartGym service
   private class SmartGymActionListener implements ActionListener {
 
     private ManagedChannel channel;
@@ -183,6 +186,7 @@ public class Controller {
     }
   }
 
+  // FitnessActionListener
   private class FitnessActionListener implements ActionListener {
 
     @Override

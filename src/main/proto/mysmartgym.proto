@@ -9,10 +9,15 @@ option java_outer_classname = "SmartGymService";
 package mysmartgym;
 
 service MySmartGym {
-  // Sends weight
+  // Gets weight.
+  // Unary RPC
   rpc WeightUpdate(Weight) returns (google.protobuf.Empty) {}
+  // Gets stream of consumed food and sends back stream of nutrients in that
+  // food Bidirectional streaming RPC
   rpc ConsumedFoodStreaming(stream ConsumedFoodRequest)
       returns (stream NutrientsReply) {}
+  // Gets stream of heartbeats and sends back workout invensity information
+  // Bidirectional streaming RPC
   rpc HeartTracking(stream HeartBeat) returns (stream WorkoutIntensity) {}
   rpc GetSavedWeights(google.protobuf.Empty) returns (stream SavedWeight) {}
 }

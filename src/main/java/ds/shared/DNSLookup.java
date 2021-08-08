@@ -6,17 +6,23 @@ import java.net.UnknownHostException;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 
+/**
+ * DNS lookup is a helper class for service discovery
+ */
 public class DNSLookup {
+  /**
+   * getEndpoint uses jmdns to find service endpoint
+   * @param serviceName is service name defined in jmdns
+   * @return endpoint or empty string is the endpoint is not found
+   */
   static public String getEndpoint(String serviceName) {
     JmDNS jmdns;
     try {
       jmdns = JmDNS.create(InetAddress.getLocalHost());
     } catch (UnknownHostException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace(System.err);
       return "";
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace(System.err);
       return "";
     }

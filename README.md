@@ -19,19 +19,19 @@
 
 This report outlines processes optimisation in a gym setting for smart, efficient and integrated monitoring system of clients progress in terms of their nutrition, step count, fitness activity, strength, endurance, heart rate during classes. The proposed system will allow to integrate numerous fitness devices the client is using as well as separate apps the gym instructors are using to track clients weight, class attendance etc.
 Following the analysis of the current processes, it was established that as of now the gym instructors use: smart weights (to access clients body weight, muscle mass and store this data over time); class booking app (allows to see type and frequency of client’s fitness activity in the gym gym). Clients are using: Fitbit/Garmin/Apple watch (for step count, other types of data depends on the device), MyZone belt (to track heart rate during the workout), MyFitnessPal (for calorie intake count, nutrition analysis).
-The purpose of the system is to incorporate the data coming from the above mentioned apps and devices and display the dashboard for the instructor with clients activity, nutrition, weight and muscle gain progress. The system will enable the trainer not only see all the parameters on one page, but will also allow the data be live and updated on the fly. It allows for possibility to be further developed.
+The purpose of the system is to incorporate the data coming from the above mentioned apps and devices and display the dashboard for the instructor with clients activity, nutrition, weight and muscle gain progress. The system will enable the trainer to not only see all the parameters on one page, but will also allow the data be live and updated on the fly. It allows for possibility of the system to be further developed.
 
 ## 2. Service definitions
 
-Comparing to the proposal, services use Empty and Timestamp types provided by Google instead of manually reimplemented similar types.
+Services use Empty and Timestamp types provided by Google instead of manually reimplemented similar types.
 
 ### 2.1 My Smart gym
 
-Communication between devices and app and smart gym to provide information for the trainer.
+My smart gym represents communication between devices, app and smart gym to provide information for the trainer.
 
 #### 2.1.1 RPC Method 1: ConsumedFoodStreaming (via FitnessPal)
 
-Bidirectional streaming RPC method. It sends stream of food consumed during the day. Receives stream of nutrients(proteins, vitamins, fats, carbs)
+Uses Bidirectional streaming RPC method. It sends stream of food consumed during the day. In return it receives stream of nutrients(proteins, vitamins, fats, carbs)
 
 ```protobuf
 service MySmartGym {
@@ -50,7 +50,7 @@ message NutrientsReply {
 
 #### 2.1.2 RPC Method 2: WeightUpdate (via Smart Weights)
 
-Unary RPC method. It sends weight as measured by Smart Weights.
+Uses Unary RPC method. It sends weight as measured by Smart Weights.
 
 ```protobuf
 service MySmartGym {
@@ -64,7 +64,7 @@ message Weight {
 
 #### 2.1.3 RPC Method 3: HeartTracking (via MyZone heart tracking belt)
 
-Bidirectional streaming RPC. MyZone heart tracking belt sends heart beat measurements stream during the class. Receives time and exercise zone.
+Bidirectional streaming RPC. MyZone heart tracking belt sends heart beat measurements stream taken from gym-goes at different periods during high intensity training class. Receives time and exercise zone.
 
 ```protobuf
 service MySmartGym {
@@ -87,7 +87,7 @@ Communication between personal fitness device/watch/tracker and My Smart Fitness
 
 #### 2.2.1 RPC Method 1: ActivityTracking
 
-Server streaming RPC. It sends date, receives stream of activities hourly for the day, e.g. activities taken, steps made.
+Uses Server streaming RPC. It sends date, receives stream of activities hourly for the day, e.g. activities taken, steps made.
 
 ```protobuf
 service MySmartFitness {
@@ -167,7 +167,7 @@ Additionally, to simplify service discovery, `MySmartGymImpl` class has two addi
 
 ### 3.2 MySmartFitness
 
-`MySmartFitness` contains the single RPC method `activityTracking`. For proof of concept, it returns specific exercises per day of week using `Calendar` Java class (Strength, Cardio and Running) with random duration and number of steps. It also randomly returns yoga independently of the day.
+`MySmartFitness` contains the single RPC method `activityTracking`. For proof of concept, it returns specific exercises per day of week using `Calendar` Java class (Strength, Cardio and Running) with random duration and number of steps. Alternatively, it can also randomly return yoga class on any day.
 It also defines `getServiceName` and `getDescription` methods to simplify service discovery.
 
 ## 4. Naming Services
@@ -180,11 +180,11 @@ During the shutdown, there is a hook to unregister the service.
 ## 5. Remote error handling
 
 There are several places where the errors might occur: service registration and discovery.
-The errors for service discovery are logged but ignored, since they do not prevent the correct work of the service. Service communication errors are blocking. When the application starts, when the service is not available, the error message is show.
+The errors for service discovery are logged but ignored, since they do not prevent the correct work of the service. Service communication errors are blocking. When the application starts, but the service is not available, the error message is shown.
 
 ## 6. Client - Graphical User Interface (GUI)
 
-Client implemented in the `Controller` class. It has two separate subclasses to handle the requests to two different services: `SmartGymActionListener` and `FitnessActionListener`. They implement `ActionListener` interface.
+Client is implemented in the `Controller` class. It has two separate subclasses to handle the requests to two different services: `SmartGymActionListener` and `FitnessActionListener`. They implement `ActionListener` interface.
 The GUI creation is split between submethods for calling each RPC method. Several components are used for different calls: `JTextField` is used for entering single line data and showing single line response, `JTextArea` is used for entering multi-line data and showing multiline response, `JDatePicker`(`io.github.lzh0379.jdatepicker`) is used to select date.
 
  ![screenshot of running program](screenshot.png "Four main implemented methods")
